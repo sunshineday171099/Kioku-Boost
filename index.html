@@ -46,8 +46,12 @@ input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid v
 .title{font-weight:700;font-size:17px;line-height:1.4;overflow-wrap:anywhere}
 .meta{font-size:13px;color:var(--mute)}
 .mini{border:0;background:var(--hide);color:var(--ink);font:inherit;font-size:13px;border-radius:10px;padding:6px 10px;cursor:pointer;white-space:nowrap}
-.mini.ic,.mini.x{height:34px;padding:0 11px;display:flex;align-items:center;justify-content:center;line-height:1}
-.mini.ic{font-size:18px}
+.mini.ic,.mini.x{height:34px;padding:0 9px;display:flex;align-items:center;justify-content:center;line-height:1}
+.mini.ic{font-size:19px;background:none;color:var(--mute)}
+.mini.ic:active,.mini.x:active{background:var(--hide)}
+.hd.e .mini.ic{color:var(--accent)}
+.ti.li{font-weight:400;font-size:14px;height:34px;margin-top:6px}
+a.mini{text-decoration:none}
 .prog span:first-child{white-space:nowrap}
 .prog span:last-child{min-width:0;flex:0 1 auto;max-width:50%;margin-left:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 select{-webkit-appearance:none;appearance:none;padding-right:42px;text-overflow:ellipsis;white-space:nowrap;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%238A9A94' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 18px center;background-size:12px 8px}
@@ -91,17 +95,90 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;text-overflow:
   <h1>記憶ブースト</h1>
   <div class="tabs">
     <button id="t1" class="on" onclick="tab('list')">Catatan</button>
-    <button id="t2" onclick="tab('quiz')">Acak</button>
+    <button id="t2" onclick="tab('quiz')">Kartu</button>
   </div>
+  <div id="st" class="meta" style="text-align:center;min-height:0"></div>
   <div id="app"></div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
 <script>
+const SB_URL='https://ujwlgqqglpvijrhafluf.supabase.co';
+const SB_KEY='sb_publishable_EdcCEB15f3wyhSg-y4GB5w_QSOVe06C';
 const K='kotoba-harian-v2';
 let qs='',openM={},S=[],view='list',gh={jp:false,rd:false,mn:false,nt:false},flip={},openNew=false,editId=null;
 let q={deck:[],i:0,sel:['mn'],rnd:true,scope:'all',src:'all',hidden:[],shown:{}};
 const F=[['jp','Jepang'],['rd','Baca'],['mn','Arti']];
 function load(){try{S=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){S=[]}}
-function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
+function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}schedule()}
+/* ---- sinkron Supabase ---- */
+let sb=null,user=null,synced={},timer=null;
+function setStatus(t){const e=document.getElementById('st');if(e)e.textContent=t}
+function saveSync(){try{localStorage.setItem(K+'-sync',JSON.stringify(synced))}catch(e){}}
+function schedule(){if(!sb||!user)return;clearTimeout(timer);timer=setTimeout(push,1500)}
+async function push(){
+  if(!sb||!user)return;
+  const up=S.filter(s=>synced[s.id]!==JSON.stringify(s));
+  const gone=Object.keys(synced).filter(id=>!S.some(s=>s.id===id));
+  try{
+    if(up.length){
+      const {error}=await sb.from('notes').upsert(up.map(s=>({id:s.id,title:s.title,note_date:s.date,body:s.text,link:s.link||'',updated_at:new Date().toISOString()})));
+      if(error)throw error;
+      up.forEach(s=>synced[s.id]=JSON.stringify(s));
+    }
+    if(gone.length){
+      const {error}=await sb.from('notes').delete().in('id',gone);
+      if(error)throw error;
+      gone.forEach(id=>delete synced[id]);
+    }
+    saveSync();setStatus('');
+  }catch(e){setStatus('belum tersinkron, akan dicoba lagi')}
+}
+async function pull(){
+  if(!sb||!user)return;
+  const {data,error}=await sb.from('notes').select('id,title,note_date,body,link');
+  if(error){setStatus('offline, pakai data di HP');return}
+  const rm=new Map(),out=[];
+  data.forEach(r=>{
+    const n={id:r.id,title:r.title||'',date:r.note_date,text:r.body||'',link:r.link||''};
+    rm.set(n.id,n);
+    const l=S.find(x=>x.id===n.id),pending=synced[n.id]!==undefined;
+    if(pending&&!l)return;
+    out.push(pending&&synced[n.id]!==JSON.stringify(l)?l:n);
+    synced[n.id]=JSON.stringify(n);
+  });
+  S.forEach(l=>{if(!rm.has(l.id)&&synced[l.id]===undefined)out.push(l)});
+  Object.keys(synced).forEach(id=>{if(!rm.has(id)&&!S.some(x=>x.id===id))delete synced[id]});
+  S=out;
+  try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}
+  saveSync();setStatus('');schedule();
+}
+function renderLogin(){
+  return `<div class="new"><input id="lg-e" type="email" placeholder="Email" autocomplete="username"><input id="lg-p" type="password" placeholder="Kata sandi" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"><button class="btn" onclick="login()">Masuk</button><div id="lg-m" class="hint"></div></div>`;
+}
+async function login(){
+  const e=document.getElementById('lg-e').value.trim(),p=document.getElementById('lg-p').value;
+  const {data,error}=await sb.auth.signInWithPassword({email:e,password:p});
+  if(error){document.getElementById('lg-m').textContent='Email atau kata sandi salah.';return}
+  user=data.user;view='list';render();await pull();render();
+}
+async function logout(){
+  if(!confirm('Keluar dari akun ini?'))return;
+  await sb.auth.signOut();user=null;view='login';render();
+}
+async function init(){
+  load();
+  try{synced=JSON.parse(localStorage.getItem(K+'-sync')||'{}')}catch(e){synced={}}
+  if(window.supabase&&SB_URL.indexOf('http')===0){
+    sb=window.supabase.createClient(SB_URL,SB_KEY);
+    const r=await sb.auth.getSession();
+    user=r.data.session?r.data.session.user:null;
+    if(!user){view='login';render();return}
+    render();await pull();render();
+    const again=()=>{if(user)pull().then(()=>{if(!editId&&view!=='login')render()})};
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)again()});
+    window.addEventListener('online',again);
+  }else render();
+}
 function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function fmt(d){const [y,m,dd]=d.split('-').map(Number);return new Date(y,m-1,dd).toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
@@ -124,6 +201,11 @@ function noteCell(s,x,i){
   const key=s.id+i+'nt',hid=gh.nt!==!!flip[key];
   return `<div class="c nt ${hid?'h':''}" onclick="flipC('${key}')"><span>${esc(x.nt)}</span></div>`;
 }
+let shuf=false,shufSeed=1;
+function hash(t){let h=2166136261;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function order(s,w){const o=w.map((_,i)=>i);if(!shuf)return o;const r=rng(hash(s.id)^shufSeed);for(let i=o.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[o[i],o[j]]=[o[j],o[i]]}return o}
+function toggleShuf(){shuf=!shuf;if(shuf)shufSeed=Math.floor(Math.random()*1e9);flip={};render()}
 function monthLabel(k){const [y,m]=k.split('-').map(Number);return new Date(y,m-1,1).toLocaleDateString('id-ID',{month:'long',year:'numeric'})}
 function onSearch(v){qs=v;render();const e=document.getElementById('qs');if(e){e.focus();e.setSelectionRange(v.length,v.length)}}
 function tab(v){view=v;document.getElementById('t1').className=v==='list'?'on':'';document.getElementById('t2').className=v==='quiz'?'on':'';if(v==='quiz')startQuiz();render()}
@@ -131,7 +213,7 @@ function tab(v){view=v;document.getElementById('t1').className=v==='list'?'on':'
 function createSrc(){
   const t=document.getElementById('n-title').value.trim()||'Tanpa judul';
   const d=document.getElementById('n-date').value||today();
-  const s={id:String(Date.now()),title:t,date:d,text:''};
+  const s={id:crypto.randomUUID(),title:t,date:d,text:'',link:''};
   S.unshift(s);save();openNew=false;editId=s.id;render();focusTa();
 }
 function focusTa(){const t=document.querySelector('textarea');if(t){grow(t);t.focus();t.setSelectionRange(t.value.length,t.value.length)}}
@@ -139,6 +221,8 @@ function grow(t){t.style.height='auto';t.style.height=Math.max(130,t.scrollHeigh
 function onType(id,t){const s=S.find(x=>x.id===id);if(s){s.text=t.value;save()}grow(t)}
 function edit(id){editId=id;render();focusTa()}
 function onTitle(id,v){const s=S.find(x=>x.id===id);if(s){s.title=v;save()}}
+function onLink(id,v){const s=S.find(x=>x.id===id);if(s){s.link=v.trim();save()}}
+function safeUrl(u){u=(u||'').trim();if(!u)return'';if(!/^[a-z][a-z0-9+.-]*:/i.test(u))u='https://'+u;return /^https?:\/\//i.test(u)?u:''}
 function done(){S.forEach(s=>{if(!s.title.trim())s.title='Tanpa judul'});save();editId=null;flip={};render()}
 function del(id){if(confirm('Hapus catatan ini beserta semua katanya?')){S=S.filter(x=>x.id!==id);if(editId===id)editId=null;save();render()}}
 function toggleG(k){gh[k]=!gh[k];flip={};render()}
@@ -151,7 +235,7 @@ function renderList(){
   }else h+=`<button class="btn" style="width:100%;margin-bottom:12px" onclick="openNew=true;render();document.getElementById('n-title').focus()">+ Catatan baru</button>`;
   if(S.length){
     h+=`<input id="qs" type="search" placeholder="Cari kata atau judul" value="${esc(qs)}" oninput="onSearch(this.value)" autocomplete="off" style="margin:3px 0 8px">`;
-    h+=`<div class="bar">Tutup:`+F.concat([['nt','Catatan']]).map(([k,n])=>`<button class="chip ${gh[k]?'on':''}" onclick="toggleG('${k}')">${n}</button>`).join('')+`</div>`;
+    h+=`<div class="bar">Tutup:`+F.concat([['nt','Catatan']]).map(([k,n])=>`<button class="chip ${gh[k]?'on':''}" onclick="toggleG('${k}')">${n}</button>`).join('')+`<button class="chip ${shuf?'on':''}" style="margin-left:auto" onclick="toggleShuf()">Acak</button></div>`;
 
     const qq=qs.trim().toLowerCase(),thisM=today().slice(0,7);
     const L=S.filter(s=>!qq||(s.title+' '+s.text).toLowerCase().includes(qq)).sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
@@ -165,23 +249,23 @@ function renderList(){
         const op=qq||(editId&&L.some(x=>x.id===editId&&x.date.slice(0,7)===mk))||(mk in openM?openM[mk]:mk===thisM);
         h+=`<details class="mo" ${op?'open':''} ontoggle="if(!qs)openM['${mk}']=this.open"><summary>${monthLabel(mk)} · ${n} catatan</summary>`;
       }
-      const w=parse(s.text),ed=editId===s.id;
-      h+=`<div class="card"><div class="hd${ed?' e':''}"><div class="t">${ed?`<input class="ti" value="${esc(s.title)}" oninput="onTitle('${s.id}',this.value)" lang="ja" autocomplete="off" aria-label="Judul"><div class="meta" style="margin-top:4px">${fmt(s.date)} · ${w.length} kata</div>`:`<div class="title">${esc(s.title)}</div><div class="meta">${fmt(s.date)} · ${w.length} kata</div>`}</div>
-        <button class="mini ic" aria-label="${ed?'Selesai':'Catat'}" onclick="${ed?'done()':`edit('${s.id}')`}">${ed?'✓︎':'✎︎'}</button><button class="mini x" aria-label="Hapus" onclick="del('${s.id}')">×</button></div>`;
+      const w=parse(s.text),ed=editId===s.id,lk=safeUrl(s.link);
+      h+=`<div class="card"><div class="hd${ed?' e':''}"><div class="t">${ed?`<input class="ti" value="${esc(s.title)}" oninput="onTitle('${s.id}',this.value)" lang="ja" autocomplete="off" aria-label="Judul"><input class="ti li" value="${esc(s.link||'')}" oninput="onLink('${s.id}',this.value)" placeholder="Link (opsional)" inputmode="url" autocapitalize="off" autocomplete="off" aria-label="Link"><div class="meta" style="margin-top:6px">${fmt(s.date)} · ${w.length} kata</div>`:`<div class="title">${esc(s.title)}</div><div class="meta">${fmt(s.date)} · ${w.length} kata</div>`}</div>
+        ${(!ed&&lk)?`<a class="mini ic" href="${esc(lk)}" target="_blank" rel="noopener noreferrer" aria-label="Buka link">↗︎</a>`:''}<button class="mini ic" aria-label="${ed?'Selesai':'Catat'}" onclick="${ed?'done()':`edit('${s.id}')`}">${ed?'✓︎':'✎︎'}</button><button class="mini x" aria-label="Hapus" onclick="del('${s.id}')">×</button></div>`;
       if(ed){
         h+=`<textarea id="ta" lang="ja" autocapitalize="off" oninput="onType('${s.id}',this)">${esc(s.text)}</textarea>`;
       }else if(w.length){
-        h+=`<div class="tbl">`+w.map((x,i)=>F.map(([k])=>{
+        h+=`<div class="tbl">`+order(s,w).map(i=>{const x=w[i];return F.map(([k])=>{
           const key=s.id+i+k,hid=gh[k]!==!!flip[key];
           return `<div class="c ${k} ${hid?'h':''}" onclick="flipC('${key}')"><span>${esc(x[k])}</span></div>`;
-        }).join('')+noteCell(s,x,i)).join('')+`</div>`;
+        }).join('')+noteCell(s,x,i)}).join('')+`</div>`;
       }else h+=`<div class="empty">Belum ada kata.</div>`;
       h+=`</div>`;
     });
     if(cur)h+='</details>';
     if(!L.length)h+=`<div class="empty">Tidak ada yang cocok.</div>`;
   }
-  h+=`<div class="hint" style="text-align:center;margin-top:24px">Satu kata satu baris: Jepang / cara baca / arti. Cara baca boleh dilewati. Tanda # untuk catatan.</div><div class="tiny" style="margin-top:4px"><button onclick="theme()">Ganti tema</button></div>`;
+  h+=`<div class="hint" style="text-align:center;margin-top:24px">Satu kata satu baris: Jepang / cara baca / arti. Cara baca boleh dilewati. Tanda # untuk catatan.</div><div class="tiny" style="margin-top:4px"><button onclick="theme()">Ganti tema</button>${sb?' <button onclick="logout()">Keluar</button>':''}</div>`;
   return h;
 }
 
@@ -238,8 +322,11 @@ function theme(){
   const r=document.documentElement,dark=getComputedStyle(r).colorScheme==='dark';
   r.setAttribute('data-theme',dark?'light':'dark');
 }
-function render(){document.getElementById('app').innerHTML=view==='list'?renderList():renderQuiz()}
-load();render();
+function render(){
+  const tb=document.querySelector('.tabs');if(tb)tb.style.display=view==='login'?'none':'';
+  document.getElementById('app').innerHTML=view==='login'?renderLogin():view==='list'?renderList():renderQuiz();
+}
+init();
 </script>
 </body>
 </html>

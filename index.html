@@ -63,7 +63,7 @@ a.mini{text-decoration:none}
 select{-webkit-appearance:none;appearance:none;padding-right:42px;text-overflow:ellipsis;white-space:nowrap;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%238A9A94' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 18px center;background-size:12px 8px}
 .mini.x{background:none;color:var(--mute);font-size:22px}
 .hint{font-size:13px;color:var(--mute);margin:6px 2px 8px}
-.tbl{display:grid;grid-template-columns:1.1fr 1fr 1.3fr 30px;margin-top:4px}
+.tbl{display:grid;grid-template-columns:1.1fr 1fr 1.3fr;margin-top:4px}
 .c{padding:8px 6px;border-top:1px solid var(--line);cursor:pointer;min-height:42px;display:flex;align-items:center;overflow-wrap:anywhere}
 .c.jp{font-size:20px;font-weight:500}
 .c.rd{color:var(--accent);font-size:15px}
@@ -115,7 +115,7 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;text-overflow:
 const SB_URL='https://ujwlgqqglpvijrhafluf.supabase.co';
 const SB_KEY='sb_publishable_EdcCEB15f3wyhSg-y4GB5w_QSOVe06C';
 const K='kotoba-harian-v2';
-let onlyHard=false,qs='',openM={},S=[],view='list',gh={jp:false,rd:false,mn:false,nt:false},flip={},openNew=false,editId=null;
+let qs='',openM={},S=[],view='list',gh={jp:false,rd:false,mn:false,nt:false},flip={},openNew=false,editId=null;
 let q={deck:[],i:0,sel:['mn'],rnd:true,scope:'all',src:'all',hidden:[],shown:{},hard:false};
 const F=[['jp','Jepang'],['rd','Baca'],['mn','Arti']];
 const EYE=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>`;
@@ -225,8 +225,6 @@ function toggleHard(id,i){
   }
   s.text=L.join('\n');save();
 }
-function hardNote(id,i){toggleHard(id,i);render()}
-function toggleHardView(){onlyHard=!onlyHard;render()}
 function noteCell(s,x,i){
   if(!x.nt)return'';
   const key=s.id+i+'nt',hid=gh.nt!==!!flip[key];
@@ -283,10 +281,10 @@ function renderList(){
   }else h+=`<button class="btn" style="width:100%;margin-bottom:12px" onclick="openNew=true;render();document.getElementById('n-title').focus()">+ Catatan baru</button>`;
   if(S.length){
     h+=`<input id="qs" type="search" placeholder="Cari kata atau judul" value="${esc(qs)}" oninput="onSearch(this.value)" autocomplete="off" style="margin:3px 0 8px">`;
-    h+=`<div class="bar"><span class="ic0" title="Tutup" aria-label="Tutup">${EYE}</span>`+F.concat([['nt','Catatan']]).map(([k,n])=>`<button class="chip ${gh[k]?'on':''}" onclick="toggleG('${k}')">${n}</button>`).join('')+`<button class="chip sq ${onlyHard?'on':''}" style="margin-left:auto" onclick="toggleHardView()" aria-label="Hanya yang susah" title="Hanya yang susah">${flagIc(onlyHard,16)}</button><button class="chip sq ${shuf?'on':''}" onclick="toggleShuf()" aria-label="Acak" title="Acak">${SHUF}</button></div>`;
+    h+=`<div class="bar"><span class="ic0" title="Tutup" aria-label="Tutup">${EYE}</span>`+F.concat([['nt','Catatan']]).map(([k,n])=>`<button class="chip ${gh[k]?'on':''}" onclick="toggleG('${k}')">${n}</button>`).join('')+`<button class="chip sq ${shuf?'on':''}" style="margin-left:auto" onclick="toggleShuf()" aria-label="Acak" title="Acak">${SHUF}</button></div>`;
 
     const qq=qs.trim().toLowerCase(),thisM=today().slice(0,7);
-    const L=S.filter(s=>(!qq||(s.title+' '+s.text).toLowerCase().includes(qq))&&(!onlyHard||s.id===editId||parse(s.text).some(x=>x.hard))).sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
+    const L=S.filter(s=>(!qq||(s.title+' '+s.text).toLowerCase().includes(qq))).sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
     let cur='';
     L.forEach(s=>{
       const mk=s.date.slice(0,7);
@@ -303,10 +301,10 @@ function renderList(){
       if(ed){
         h+=`<textarea id="ta" lang="ja" autocapitalize="off" oninput="onType('${s.id}',this)">${esc(s.text)}</textarea>`;
       }else if(w.length){
-        h+=`<div class="tbl">`+order(s,w).filter(i=>!onlyHard||w[i].hard).map(i=>{const x=w[i];return F.map(([k])=>{
+        h+=`<div class="tbl">`+order(s,w).map(i=>{const x=w[i];return F.map(([k])=>{
           const key=s.id+i+k,hid=gh[k]!==!!flip[key];
           return `<div class="c ${k} ${hid?'h':''}" onclick="flipC('${key}')"><span>${esc(x[k])}</span></div>`;
-        }).join('')+`<div class="c fl"><button class="flg ${x.hard?'on':''}" onclick="hardNote('${s.id}',${i})" aria-label="Tandai susah" title="Tandai susah">${flagIc(x.hard,15)}</button></div>`+noteCell(s,x,i)}).join('')+`</div>`;
+        }).join('')+noteCell(s,x,i)}).join('')+`</div>`;
       }else h+=`<div class="empty">Belum ada kata.</div>`;
       h+=`</div>`;
     });

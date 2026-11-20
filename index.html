@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>記憶ブースト</title>
+<meta name="theme-color" content="#3F6B8C">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF3F1;--card:#FFFFFF;--ink:#1F2B27;--mute:#6B7B75;--line:#D9E3DF;
+  --accent:#3F6B8C;--accent-ink:#FFFFFF;--hide:#DCE7E3;
+  color-scheme:light;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12181A;--card:#1B2326;--ink:#E6EEEA;--mute:#8FA19A;--line:#2A3539;
+  --accent:#7FB0D3;--accent-ink:#0F1A20;--hide:#2A363A;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12181A;--card:#1B2326;--ink:#E6EEEA;--mute:#8FA19A;--line:#2A3539;
+  --accent:#7FB0D3;--accent-ink:#0F1A20;--hide:#2A363A;color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 "Zen Maru Gothic","Hiragino Maru Gothic ProN","Noto Sans JP",system-ui,sans-serif}
+.wrap{max-width:600px;margin:0 auto;padding:16px 14px 80px}
+h1{font-size:22px;margin:4px 2px 12px;font-weight:700}
+.tabs{display:flex;gap:6px;background:var(--hide);padding:4px;border-radius:14px;margin-bottom:12px}
+.tabs button{flex:1;border:0;background:none;color:var(--mute);font:inherit;font-weight:500;padding:9px;border-radius:10px;cursor:pointer}
+.tabs button.on{background:var(--card);color:var(--ink);font-weight:700}
+input,textarea,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0}
+textarea{display:block;resize:none;line-height:1.7;min-height:130px;font-size:17px}
+input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:700;border-radius:12px;padding:11px 14px;cursor:pointer}
+.btn.ghost{background:var(--hide);color:var(--ink)}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:6px 0 10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;color:var(--mute);font-size:14px}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:14px;padding:6px 12px;border-radius:99px;cursor:pointer}
+.chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.new{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px;margin-bottom:12px;display:grid;gap:8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px 14px;margin-bottom:14px}
+.hd{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px}
+.hd .t{flex:1;min-width:0}
+.title{font-weight:700;font-size:17px;line-height:1.4;overflow-wrap:anywhere}
+.meta{font-size:13px;color:var(--mute)}
+.mini{border:0;background:var(--hide);color:var(--ink);font:inherit;font-size:13px;border-radius:10px;padding:6px 10px;cursor:pointer;white-space:nowrap}
+.mini.ic,.mini.x{height:34px;padding:0 11px;display:flex;align-items:center;justify-content:center;line-height:1}
+.mini.ic{font-size:18px}
+.prog span:first-child{white-space:nowrap}
+.prog span:last-child{min-width:0;flex:0 1 auto;max-width:50%;margin-left:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+select{-webkit-appearance:none;appearance:none;padding-right:42px;text-overflow:ellipsis;white-space:nowrap;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%238A9A94' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 18px center;background-size:12px 8px}
+.mini.x{background:none;color:var(--mute);font-size:22px}
+.hint{font-size:13px;color:var(--mute);margin:6px 2px 8px}
+.tbl{display:grid;grid-template-columns:1.1fr 1fr 1.3fr;margin-top:4px}
+.c{padding:8px 6px;border-top:1px solid var(--line);cursor:pointer;min-height:42px;display:flex;align-items:center;overflow-wrap:anywhere}
+.c.jp{font-size:20px;font-weight:500}
+.c.rd{color:var(--accent);font-size:15px}
+.c.mn{font-size:15px}
+.c.h span{display:block;width:100%;height:22px;background:var(--hide);border-radius:7px;color:transparent}
+.hdc{font-size:12px;color:var(--mute);padding:2px 6px;border:0}
+.empty{text-align:center;color:var(--mute);padding:30px 10px}
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:10px 16px 16px}
+.prog{font-size:14px;color:var(--mute);margin:4px 2px 8px;display:flex;justify-content:space-between;gap:18px}
+.qr{border-bottom:1px solid var(--line);cursor:pointer;min-height:56px;display:flex;align-items:center;padding:6px 0;overflow-wrap:anywhere}
+.qr:last-of-type{border-bottom:0}
+.qr.jp{font-size:32px;font-weight:500}
+.qr.rd{font-size:19px;color:var(--accent)}
+.qr.mn{font-size:19px}
+.qr.h span{display:block;width:100%;height:34px;background:var(--hide);border-radius:9px;color:transparent}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.tiny{font-size:13px;color:var(--mute);text-align:center;margin-top:18px}
+.c.nt{grid-column:1/-1;border-top:0;min-height:0;padding:0 6px 10px;font-size:14px;color:var(--mute);line-height:1.5}
+.c.nt.h span{height:20px}
+.mo{margin-bottom:6px}
+.ti{font-weight:700;font-size:17px;height:38px;padding:0 12px}
+.hd.e .mini{height:38px;padding-top:0;padding-bottom:0;display:flex;align-items:center}
+.tiny summary{cursor:pointer;list-style:none;font-size:20px;padding:4px;color:var(--mute)}
+.tiny summary::-webkit-details-marker{display:none}
+.mo summary{cursor:pointer;font-weight:700;font-size:15px;color:var(--mute);padding:10px 4px;list-style:none}
+.mo summary::-webkit-details-marker{display:none}
+.mo summary::before{content:"▸ "}
+.mo[open] summary::before{content:"▾ "}
+.qr.nt{font-size:16px;color:var(--mute);min-height:0;border-bottom:0;padding-top:10px}
+.tiny button{border:0;background:none;color:var(--accent);font:inherit;text-decoration:underline;cursor:pointer;padding:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>記憶ブースト Kioku Būsuto</h1>
+  <div class="tabs">
+    <button id="t1" class="on" onclick="tab('list')">Catatan</button>
+    <button id="t2" onclick="tab('quiz')">Acak</button>
+  </div>
+  <div id="app"></div>
+</div>
+<script>
+const K='kotoba-harian-v2';
+let qs='',openM={},S=[],view='list',gh={jp:false,rd:false,mn:false,nt:false},flip={},openNew=false,editId=null;
+let q={deck:[],i:0,sel:['mn'],rnd:true,scope:'all',src:'all',hidden:[],shown:{}};
+const F=[['jp','Jepang'],['rd','Baca'],['mn','Arti']];
+function load(){try{S=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){S=[]}}
+function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function fmt(d){const [y,m,dd]=d.split('-').map(Number);return new Date(y,m-1,dd).toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
+function parse(text){
+  return text.split('\n').map(l=>l.trim()).filter(Boolean).map(line=>{
+    line=line.replace(/＃/g,'#');const hi=line.indexOf('#');let nt='',l=line;
+    if(hi>=0){nt=line.slice(hi+1).trim();l=line.slice(0,hi).trim()}
+    const sl=/[\/|｜／]/.test(l);
+    const p=l.split(sl?/\s*[\/|｜／]\s*/:/\s*[,、，;\t]\s*/).filter((x,i)=>x!==''||i>0);
+    if(sl&&p.length>=4&&!nt){nt=p.slice(3).join(' / ');p.length=3}
+    let r;
+    if(p.length>=3)r={jp:p[0],rd:p[1],mn:p.slice(2).join(', ')};
+    else if(p.length===2)r={jp:p[0],rd:'',mn:p[1]};
+    else r={jp:p[0]||line,rd:'',mn:''};
+    r.nt=nt;return r;
+  });
+}
+function noteCell(s,x,i){
+  if(!x.nt)return'';
+  const key=s.id+i+'nt',hid=gh.nt!==!!flip[key];
+  return `<div class="c nt ${hid?'h':''}" onclick="flipC('${key}')"><span>${esc(x.nt)}</span></div>`;
+}
+function monthLabel(k){const [y,m]=k.split('-').map(Number);return new Date(y,m-1,1).toLocaleDateString('id-ID',{month:'long',year:'numeric'})}
+function onSearch(v){qs=v;render();const e=document.getElementById('qs');if(e){e.focus();e.setSelectionRange(v.length,v.length)}}
+function tab(v){view=v;document.getElementById('t1').className=v==='list'?'on':'';document.getElementById('t2').className=v==='quiz'?'on':'';if(v==='quiz')startQuiz();render()}
+
+function createSrc(){
+  const t=document.getElementById('n-title').value.trim()||'Tanpa judul';
+  const d=document.getElementById('n-date').value||today();
+  const s={id:String(Date.now()),title:t,date:d,text:''};
+  S.unshift(s);save();openNew=false;editId=s.id;render();focusTa();
+}
+function focusTa(){const t=document.querySelector('textarea');if(t){grow(t);t.focus();t.setSelectionRange(t.value.length,t.value.length)}}
+function grow(t){t.style.height='auto';t.style.height=Math.max(130,t.scrollHeight+4)+'px'}
+function onType(id,t){const s=S.find(x=>x.id===id);if(s){s.text=t.value;save()}grow(t)}
+function edit(id){editId=id;render();focusTa()}
+function onTitle(id,v){const s=S.find(x=>x.id===id);if(s){s.title=v;save()}}
+function done(){S.forEach(s=>{if(!s.title.trim())s.title='Tanpa judul'});save();editId=null;flip={};render()}
+function del(id){if(confirm('Hapus catatan ini beserta semua katanya?')){S=S.filter(x=>x.id!==id);if(editId===id)editId=null;save();render()}}
+function toggleG(k){gh[k]=!gh[k];flip={};render()}
+function flipC(key){flip[key]=!flip[key];render()}
+
+function renderList(){
+  let h='';
+  if(openNew){
+    h+=`<div class="new"><input id="n-title" placeholder="Judul (mis. judul video YouTube)" lang="ja" autocomplete="off" onkeydown="if(event.key==='Enter')createSrc()"><input id="n-date" type="date" value="${today()}" aria-label="Tanggal"><div style="display:grid;grid-template-columns:1fr 2fr;gap:8px"><button class="btn ghost" onclick="openNew=false;render()">Batal</button><button class="btn" onclick="createSrc()">Mulai catat</button></div></div>`;
+  }else h+=`<button class="btn" style="width:100%;margin-bottom:12px" onclick="openNew=true;render();document.getElementById('n-title').focus()">+ Catatan baru</button>`;
+  if(S.length){
+    h+=`<input id="qs" type="search" placeholder="Cari kata atau judul" value="${esc(qs)}" oninput="onSearch(this.value)" autocomplete="off" style="margin:3px 0 8px">`;
+    h+=`<div class="bar">Tutup:`+F.concat([['nt','Catatan']]).map(([k,n])=>`<button class="chip ${gh[k]?'on':''}" onclick="toggleG('${k}')">${n}</button>`).join('')+`</div>`;
+
+    const qq=qs.trim().toLowerCase(),thisM=today().slice(0,7);
+    const L=S.filter(s=>!qq||(s.title+' '+s.text).toLowerCase().includes(qq)).sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
+    let cur='';
+    L.forEach(s=>{
+      const mk=s.date.slice(0,7);
+      if(mk!==cur){
+        if(cur)h+='</details>';
+        cur=mk;
+        const n=L.filter(x=>x.date.slice(0,7)===mk).length;
+        const op=qq||(editId&&L.some(x=>x.id===editId&&x.date.slice(0,7)===mk))||(mk in openM?openM[mk]:mk===thisM);
+        h+=`<details class="mo" ${op?'open':''} ontoggle="if(!qs)openM['${mk}']=this.open"><summary>${monthLabel(mk)} · ${n} catatan</summary>`;
+      }
+      const w=parse(s.text),ed=editId===s.id;
+      h+=`<div class="card"><div class="hd${ed?' e':''}"><div class="t">${ed?`<input class="ti" value="${esc(s.title)}" oninput="onTitle('${s.id}',this.value)" lang="ja" autocomplete="off" aria-label="Judul"><div class="meta" style="margin-top:4px">${fmt(s.date)} · ${w.length} kata</div>`:`<div class="title">${esc(s.title)}</div><div class="meta">${fmt(s.date)} · ${w.length} kata</div>`}</div>
+        <button class="mini ic" aria-label="${ed?'Selesai':'Catat'}" onclick="${ed?'done()':`edit('${s.id}')`}">${ed?'✓︎':'✎︎'}</button><button class="mini x" aria-label="Hapus" onclick="del('${s.id}')">×</button></div>`;
+      if(ed){
+        h+=`<textarea id="ta" lang="ja" autocapitalize="off" oninput="onType('${s.id}',this)">${esc(s.text)}</textarea>`;
+      }else if(w.length){
+        h+=`<div class="tbl">`+w.map((x,i)=>F.map(([k])=>{
+          const key=s.id+i+k,hid=gh[k]!==!!flip[key];
+          return `<div class="c ${k} ${hid?'h':''}" onclick="flipC('${key}')"><span>${esc(x[k])}</span></div>`;
+        }).join('')+noteCell(s,x,i)).join('')+`</div>`;
+      }else h+=`<div class="empty">Belum ada kata.</div>`;
+      h+=`</div>`;
+    });
+    if(cur)h+='</details>';
+    if(!L.length)h+=`<div class="empty">Tidak ada yang cocok.</div>`;
+  }
+  h+=`<div class="hint" style="text-align:center;margin-top:24px">Satu kata satu baris: Jepang / cara baca / arti. Cara baca boleh dilewati. Tanda # untuk catatan.</div><div class="tiny" style="margin-top:4px"><button onclick="theme()">Ganti tema</button></div>`;
+  return h;
+}
+
+function pool(){
+  let out=[];S.forEach(s=>{if((q.scope==='all'||s.date.slice(0,7)===q.scope)&&(q.src==='all'||q.src===s.id))parse(s.text).forEach(x=>{if(x.mn||x.rd)out.push(Object.assign({src:s.title},x))})});
+  return out;
+}
+function startQuiz(){
+  q.deck=pool();if(q.rnd)q.deck.sort(()=>Math.random()-.5);q.i=0;pickHidden();
+}
+function pickHidden(){
+  const x=q.deck[q.i];q.shown={};if(!x){q.hidden=[];return}
+  const ks=['jp'].concat(x.rd?['rd']:[]).concat(x.mn?['mn']:[]);
+  q.hidden=q.sel.filter(k=>ks.includes(k));
+}
+function setMode(m){if(m==='rand'){q.rnd=!q.rnd;startQuiz()}else{q.sel=q.sel.includes(m)?q.sel.filter(k=>k!==m):q.sel.concat(m);pickHidden()}render()}
+function setScope(v){q.scope=v;q.src='all';startQuiz();render()}
+function setSrc(v){q.src=v;startQuiz();render()}
+function reveal(k){q.shown[k]=true;render()}
+function next(){q.i++;if(q.i>=q.deck.length){if(q.rnd)q.deck.sort(()=>Math.random()-.5);q.i=0}pickHidden();render()}
+function showAns(){q.hidden.forEach(k=>q.shown[k]=true);render()}
+function renderQuiz(){
+  if(!S.length)return `<div class="empty">Tulis beberapa kata dulu di tab Catatan, lalu balik ke sini.</div>`;
+  const thisM=today().slice(0,7),ms=[...new Set(S.map(s=>s.date.slice(0,7)))].sort().reverse();
+  let h=`<div style="display:grid;gap:8px;margin-bottom:10px"><select aria-label="Bulan" onchange="setScope(this.value)"><option value="all">Semua bulan</option>`+ms.map(m=>`<option value="${m}" ${q.scope===m?'selected':''}>${m===thisM?'Bulan ini':monthLabel(m)}</option>`).join('')+`</select>`;
+  if(q.scope!=='all')h+=`<select aria-label="Judul" onchange="setSrc(this.value)"><option value="all">Semua judul</option>`+S.filter(s=>s.date.slice(0,7)===q.scope).map(s=>`<option value="${s.id}" ${q.src===s.id?'selected':''}>${esc(s.title)}</option>`).join('')+`</select>`;
+  h+=`</div>`;
+  const x=q.deck[q.i];
+  if(!x)return h+`<div class="empty">Belum ada kata di sumber ini.</div>`;
+  const modes=[['rand','Acak'],['jp','Jepang'],['rd','Baca'],['mn','Arti']];
+  h+=`<div class="bar" style="position:static;padding-top:0">Tutup:`+modes.map(([m,n])=>`<button class="chip ${(m==='rand'?q.rnd:q.sel.includes(m))?'on':''}" onclick="setMode('${m}')">${n}</button>`).join('')+`</div>`;
+  h+=`<div class="quiz"><div class="prog"><span>${q.i+1} dari ${q.deck.length}</span><span style="text-align:right">${esc(x.src)}</span></div>`;
+  F.forEach(([k])=>{
+    if(!x[k])return;
+    const hid=q.hidden.includes(k)&&!q.shown[k];
+    h+=`<div class="qr ${k} ${hid?'h':''}" onclick="reveal('${k}')"><span>${esc(x[k])}</span></div>`;
+  });
+  const all=q.hidden.every(k=>q.shown[k]);
+  if(x.nt&&all)h+=`<div class="qr nt"><span>${esc(x.nt)}</span></div>`;
+  h+=`<div class="acts"><button class="btn ghost" onclick="showAns()">Lihat jawaban</button><button class="btn" onclick="next()">${all?'Berikutnya':'Lewati'}</button></div></div>`;
+  return h;
+}
+
+function backup(){
+  const t=JSON.stringify(S);
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(()=>alert('Cadangan tersalin. Tempel di catatan lain buat disimpan.'),()=>prompt('Salin teks ini:',t))}
+  else prompt('Salin teks ini:',t);
+}
+function restore(){
+  const t=prompt('Tempel teks cadangan di sini:');if(!t)return;
+  try{const a=JSON.parse(t);if(!Array.isArray(a))throw 0;S=a;save();render()}catch(e){alert('Teks cadangan tidak valid.')}
+}
+function theme(){
+  const r=document.documentElement,dark=getComputedStyle(r).colorScheme==='dark';
+  r.setAttribute('data-theme',dark?'light':'dark');
+}
+function render(){document.getElementById('app').innerHTML=view==='list'?renderList():renderQuiz()}
+load();render();
+</script>
+</body>
+</html>

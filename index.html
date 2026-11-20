@@ -59,11 +59,11 @@ input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid v
 .ti.li{font-weight:400;font-size:14px;height:34px;margin-top:6px}
 a.mini{text-decoration:none}
 .prog span:first-child{white-space:nowrap}
-.prog span:last-child{min-width:0;flex:0 1 auto;max-width:50%;margin-left:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prog span:nth-child(2){min-width:0;flex:0 1 auto;max-width:50%;margin-left:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 select{-webkit-appearance:none;appearance:none;padding-right:42px;text-overflow:ellipsis;white-space:nowrap;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%238A9A94' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 18px center;background-size:12px 8px}
 .mini.x{background:none;color:var(--mute);font-size:22px}
 .hint{font-size:13px;color:var(--mute);margin:6px 2px 8px}
-.tbl{display:grid;grid-template-columns:1.1fr 1fr 1.3fr;margin-top:4px}
+.tbl{display:grid;grid-template-columns:1.1fr 1fr 1.3fr 30px;margin-top:4px}
 .c{padding:8px 6px;border-top:1px solid var(--line);cursor:pointer;min-height:42px;display:flex;align-items:center;overflow-wrap:anywhere}
 .c.jp{font-size:20px;font-weight:500}
 .c.rd{color:var(--accent);font-size:15px}
@@ -79,6 +79,10 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;text-overflow:
 .qr.rd{font-size:19px;color:var(--accent)}
 .qr.mn{font-size:19px}
 .qr.h span{display:block;width:100%;height:34px;background:var(--hide);border-radius:9px;color:transparent}
+.flg{border:0;background:none;color:var(--mute);opacity:.4;padding:6px;margin:-4px -6px -4px 0;display:flex;align-items:center;cursor:pointer;flex:none;border-radius:8px}
+.flg.on{color:var(--accent);opacity:1}
+.c.fl{padding:0;justify-content:center;cursor:default}
+.c.fl .flg{margin:0}
 .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
 .tiny{font-size:13px;color:var(--mute);text-align:center;margin-top:18px}
 .c.nt{grid-column:1/-1;border-top:0;min-height:0;padding:0 6px 10px;font-size:14px;color:var(--mute);line-height:1.5}
@@ -111,11 +115,12 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;text-overflow:
 const SB_URL='https://ujwlgqqglpvijrhafluf.supabase.co';
 const SB_KEY='sb_publishable_EdcCEB15f3wyhSg-y4GB5w_QSOVe06C';
 const K='kotoba-harian-v2';
-let qs='',openM={},S=[],view='list',gh={jp:false,rd:false,mn:false,nt:false},flip={},openNew=false,editId=null;
-let q={deck:[],i:0,sel:['mn'],rnd:true,scope:'all',src:'all',hidden:[],shown:{}};
+let onlyHard=false,qs='',openM={},S=[],view='list',gh={jp:false,rd:false,mn:false,nt:false},flip={},openNew=false,editId=null;
+let q={deck:[],i:0,sel:['mn'],rnd:true,scope:'all',src:'all',hidden:[],shown:{},hard:false};
 const F=[['jp','Jepang'],['rd','Baca'],['mn','Arti']];
 const EYE=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>`;
 const SHUF=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>`;
+function flagIc(on,z){return `<svg width="${z}" height="${z}" viewBox="0 0 24 24" fill="${on?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V3"/><path d="M4 4h14l-3 4.5L18 13H4"/></svg>`}
 function load(){try{S=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){S=[]}}
 function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}schedule()}
 /* ---- sinkron Supabase ---- */
@@ -197,7 +202,8 @@ function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function fmt(d){const [y,m,dd]=d.split('-').map(Number);return new Date(y,m-1,dd).toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
 function parse(text){
-  return text.split('\n').map(l=>l.trim()).filter(Boolean).map(line=>{
+  return text.split('\n').map(l=>l.trim()).filter(Boolean).map(raw=>{
+    const hard=/^[*＊★]/.test(raw);let line=hard?raw.replace(/^[*＊★]\s*/,''):raw;
     line=line.replace(/＃/g,'#');const hi=line.indexOf('#');let nt='',l=line;
     if(hi>=0){nt=line.slice(hi+1).trim();l=line.slice(0,hi).trim()}
     const sl=/[\/|｜／]/.test(l);
@@ -207,9 +213,20 @@ function parse(text){
     if(p.length>=3)r={jp:p[0],rd:p[1],mn:p.slice(2).join(', ')};
     else if(p.length===2)r={jp:p[0],rd:'',mn:p[1]};
     else r={jp:p[0]||line,rd:'',mn:''};
-    r.nt=nt;return r;
+    r.nt=nt;r.hard=hard;return r;
   });
 }
+function toggleHard(id,i){
+  const s=S.find(x=>x.id===id);if(!s)return;
+  const L=s.text.split('\n');let n=-1;
+  for(let j=0;j<L.length;j++){
+    const t=L[j].trim();if(!t)continue;
+    if(++n===i){L[j]=/^[*＊★]/.test(t)?t.replace(/^[*＊★]\s*/,''):'* '+t;break}
+  }
+  s.text=L.join('\n');save();
+}
+function hardNote(id,i){toggleHard(id,i);render()}
+function toggleHardView(){onlyHard=!onlyHard;render()}
 function noteCell(s,x,i){
   if(!x.nt)return'';
   const key=s.id+i+'nt',hid=gh.nt!==!!flip[key];
@@ -266,10 +283,10 @@ function renderList(){
   }else h+=`<button class="btn" style="width:100%;margin-bottom:12px" onclick="openNew=true;render();document.getElementById('n-title').focus()">+ Catatan baru</button>`;
   if(S.length){
     h+=`<input id="qs" type="search" placeholder="Cari kata atau judul" value="${esc(qs)}" oninput="onSearch(this.value)" autocomplete="off" style="margin:3px 0 8px">`;
-    h+=`<div class="bar"><span class="ic0" title="Tutup" aria-label="Tutup">${EYE}</span>`+F.concat([['nt','Catatan']]).map(([k,n])=>`<button class="chip ${gh[k]?'on':''}" onclick="toggleG('${k}')">${n}</button>`).join('')+`<button class="chip sq ${shuf?'on':''}" style="margin-left:auto" onclick="toggleShuf()" aria-label="Acak" title="Acak">${SHUF}</button></div>`;
+    h+=`<div class="bar"><span class="ic0" title="Tutup" aria-label="Tutup">${EYE}</span>`+F.concat([['nt','Catatan']]).map(([k,n])=>`<button class="chip ${gh[k]?'on':''}" onclick="toggleG('${k}')">${n}</button>`).join('')+`<button class="chip sq ${onlyHard?'on':''}" style="margin-left:auto" onclick="toggleHardView()" aria-label="Hanya yang susah" title="Hanya yang susah">${flagIc(onlyHard,16)}</button><button class="chip sq ${shuf?'on':''}" onclick="toggleShuf()" aria-label="Acak" title="Acak">${SHUF}</button></div>`;
 
     const qq=qs.trim().toLowerCase(),thisM=today().slice(0,7);
-    const L=S.filter(s=>!qq||(s.title+' '+s.text).toLowerCase().includes(qq)).sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
+    const L=S.filter(s=>(!qq||(s.title+' '+s.text).toLowerCase().includes(qq))&&(!onlyHard||s.id===editId||parse(s.text).some(x=>x.hard))).sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
     let cur='';
     L.forEach(s=>{
       const mk=s.date.slice(0,7);
@@ -286,10 +303,10 @@ function renderList(){
       if(ed){
         h+=`<textarea id="ta" lang="ja" autocapitalize="off" oninput="onType('${s.id}',this)">${esc(s.text)}</textarea>`;
       }else if(w.length){
-        h+=`<div class="tbl">`+order(s,w).map(i=>{const x=w[i];return F.map(([k])=>{
+        h+=`<div class="tbl">`+order(s,w).filter(i=>!onlyHard||w[i].hard).map(i=>{const x=w[i];return F.map(([k])=>{
           const key=s.id+i+k,hid=gh[k]!==!!flip[key];
           return `<div class="c ${k} ${hid?'h':''}" onclick="flipC('${key}')"><span>${esc(x[k])}</span></div>`;
-        }).join('')+noteCell(s,x,i)}).join('')+`</div>`;
+        }).join('')+`<div class="c fl"><button class="flg ${x.hard?'on':''}" onclick="hardNote('${s.id}',${i})" aria-label="Tandai susah" title="Tandai susah">${flagIc(x.hard,15)}</button></div>`+noteCell(s,x,i)}).join('')+`</div>`;
       }else h+=`<div class="empty">Belum ada kata.</div>`;
       h+=`</div>`;
     });
@@ -301,11 +318,11 @@ function renderList(){
 }
 
 function pool(){
-  let out=[];S.forEach(s=>{if((q.scope==='all'||s.date.slice(0,7)===q.scope)&&(q.src==='all'||q.src===s.id))parse(s.text).forEach(x=>{if(x.mn||x.rd)out.push(Object.assign({src:s.title},x))})});
+  let out=[];S.forEach(s=>{if((q.scope==='all'||s.date.slice(0,7)===q.scope)&&(q.src==='all'||q.src===s.id))parse(s.text).forEach((x,li)=>{if(x.mn||x.rd)out.push(Object.assign({src:s.title,sid:s.id,li},x))})});
   return out;
 }
 function startQuiz(){
-  q.deck=pool();if(q.rnd)q.deck.sort(()=>Math.random()-.5);q.i=0;pickHidden();
+  q.deck=pool();if(q.hard)q.deck=q.deck.filter(x=>x.hard);if(q.rnd)shuffleDeck(q.deck);q.i=0;pickHidden();
 }
 function pickHidden(){
   const x=q.deck[q.i];q.shown={};if(!x){q.hidden=[];return}
@@ -316,7 +333,10 @@ function setMode(m){if(m==='rand'){q.rnd=!q.rnd;startQuiz()}else{q.sel=q.sel.inc
 function setScope(v){q.scope=v;q.src='all';startQuiz();render()}
 function setSrc(v){q.src=v;startQuiz();render()}
 function reveal(k){q.shown[k]=true;render()}
-function next(){q.i++;if(q.i>=q.deck.length){if(q.rnd)q.deck.sort(()=>Math.random()-.5);q.i=0}pickHidden();render()}
+function shuffleDeck(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function next(){q.i++;if(q.i>=q.deck.length){if(q.rnd)shuffleDeck(q.deck);q.i=0}pickHidden();render()}
+function toggleQHard(){q.hard=!q.hard;startQuiz();render()}
+function markHard(){const x=q.deck[q.i];if(!x)return;toggleHard(x.sid,x.li);x.hard=!x.hard;render()}
 function showAns(){q.hidden.forEach(k=>q.shown[k]=true);render()}
 function renderQuiz(){
   if(!S.length)return `<div class="empty">Tulis beberapa kata dulu di tab Catatan, lalu balik ke sini.</div>`;
@@ -324,11 +344,12 @@ function renderQuiz(){
   let h=`<div style="display:grid;gap:8px;margin-bottom:10px"><select aria-label="Bulan" onchange="setScope(this.value)"><option value="all">Semua bulan</option>`+ms.map(m=>`<option value="${m}" ${q.scope===m?'selected':''}>${m===thisM?'Bulan ini':monthLabel(m)}</option>`).join('')+`</select>`;
   if(q.scope!=='all')h+=`<select aria-label="Judul" onchange="setSrc(this.value)"><option value="all">Semua judul</option>`+S.filter(s=>s.date.slice(0,7)===q.scope).map(s=>`<option value="${s.id}" ${q.src===s.id?'selected':''}>${esc(s.title)}</option>`).join('')+`</select>`;
   h+=`</div>`;
-  const x=q.deck[q.i];
-  if(!x)return h+`<div class="empty">Belum ada kata di sumber ini.</div>`;
   const modes=[['jp','Jepang'],['rd','Baca'],['mn','Arti']];
-  h+=`<div class="bar" style="position:static;padding-top:0"><span class="ic0" title="Tutup" aria-label="Tutup">${EYE}</span>`+modes.map(([m,n])=>`<button class="chip ${(m==='rand'?q.rnd:q.sel.includes(m))?'on':''}" onclick="setMode('${m}')">${n}</button>`).join('')+`<button class="chip sq ${q.rnd?'on':''}" style="margin-left:auto" onclick="setMode('rand')" aria-label="Acak" title="Acak">${SHUF}</button></div>`;
-  h+=`<div class="quiz"><div class="prog"><span>${q.i+1} dari ${q.deck.length}</span><span style="text-align:right">${esc(x.src)}</span></div>`;
+  const bar=`<div class="bar" style="position:static;padding-top:0"><span class="ic0" title="Tutup" aria-label="Tutup">${EYE}</span>`+modes.map(([m,n])=>`<button class="chip ${(m==='rand'?q.rnd:q.sel.includes(m))?'on':''}" onclick="setMode('${m}')">${n}</button>`).join('')+`<button class="chip sq ${q.hard?'on':''}" style="margin-left:auto" onclick="toggleQHard()" aria-label="Hanya yang susah" title="Hanya yang susah">${flagIc(q.hard,16)}</button><button class="chip sq ${q.rnd?'on':''}" onclick="setMode('rand')" aria-label="Acak" title="Acak">${SHUF}</button></div>`;
+  const x=q.deck[q.i];
+  if(!x)return h+(q.hard?bar+`<div class="empty">Belum ada kata yang ditandai susah.</div>`:`<div class="empty">Belum ada kata di sumber ini.</div>`);
+  h+=bar;
+  h+=`<div class="quiz"><div class="prog"><span>${q.i+1} dari ${q.deck.length}</span><span style="text-align:right">${esc(x.src)}</span><button class="flg ${x.hard?'on':''}" onclick="markHard()" aria-label="Tandai susah" title="Tandai susah">${flagIc(x.hard,17)}</button></div>`;
   F.forEach(([k])=>{
     if(!x[k])return;
     const hid=q.hidden.includes(k)&&!q.shown[k];

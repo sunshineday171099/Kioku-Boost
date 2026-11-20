@@ -47,8 +47,8 @@ input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid v
 .meta{font-size:13px;color:var(--mute)}
 .mini{border:0;background:var(--hide);color:var(--ink);font:inherit;font-size:13px;border-radius:10px;padding:6px 10px;cursor:pointer;white-space:nowrap}
 .mini.ic,.mini.x{height:34px;padding:0 9px;display:flex;align-items:center;justify-content:center;line-height:1}
-.dl{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:16px;z-index:20;width:38px;height:38px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--mute);cursor:pointer}
-.dl:hover{color:var(--ink)}
+.dl{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:16px;z-index:20;width:38px;height:38px;display:flex;align-items:center;justify-content:center;border:0;border-radius:12px;background:none;color:var(--mute);cursor:pointer}
+.dl:hover{background:var(--hide);color:var(--ink)}
 @media (pointer:coarse),(max-width:700px){.dl{display:none}}
 .mini.ic{font-size:19px;background:none;color:var(--mute)}
 .mini.ic:active,.mini.x:active{background:var(--hide)}
@@ -138,8 +138,14 @@ async function push(){
 }
 async function pull(){
   if(!sb||!user)return;
-  const {data,error}=await sb.from('notes').select('id,title,note_date,body,link');
-  if(error){setStatus('offline, pakai data di HP');return}
+  let data=[],from=0;
+  for(;;){
+    const r=await sb.from('notes').select('id,title,note_date,body,link').order('id').range(from,from+999);
+    if(r.error)return;
+    data=data.concat(r.data);
+    if(r.data.length<1000)break;
+    from+=1000;
+  }
   const rm=new Map(),out=[];
   data.forEach(r=>{
     const n={id:r.id,title:r.title||'',date:r.note_date,text:r.body||'',link:r.link||''};

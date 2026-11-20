@@ -234,7 +234,7 @@ function toggleHard(id,i){
 function noteCell(s,x,i){
   if(!x.nt)return'';
   const key=s.id+i+'nt',hid=gh.nt!==!!flip[key];
-  return `<div class="c nt ${hid?'h':''}" onclick="flipC('${key}')"><span>${esc(x.nt)}</span></div>`;
+  return `<div class="c nt ${hid?'h':''}" onclick="flipC('${key}')"><span>※ ${esc(x.nt)}</span></div>`;
 }
 let shuf=false,shufSeed=1;
 function hash(t){let h=2166136261;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
@@ -360,7 +360,7 @@ function renderQuiz(){
     h+=`<div class="qr ${k} ${hid?'h':''}" onclick="reveal('${k}')"><span>${esc(x[k])}</span></div>`;
   });
   const all=q.hidden.every(k=>q.shown[k]);
-  if(x.nt&&all)h+=`<div class="qr nt"><span>${esc(x.nt)}</span></div>`;
+  if(x.nt&&all)h+=`<div class="qr nt"><span>※ ${esc(x.nt)}</span></div>`;
   h+=`<div class="acts"><button class="btn ghost" onclick="showAns()">Lihat jawaban</button><button class="btn" onclick="next()">${all?'Berikutnya':'Lewati'}</button></div></div>`;
   return h;
 }

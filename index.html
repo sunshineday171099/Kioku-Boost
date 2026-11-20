@@ -147,7 +147,7 @@ function flipC(key){flip[key]=!flip[key];render()}
 function renderList(){
   let h='';
   if(openNew){
-    h+=`<div class="new"><input id="n-title" placeholder="Judul (mis. judul video YouTube)" lang="ja" autocomplete="off" onkeydown="if(event.key==='Enter')createSrc()"><input id="n-date" type="date" value="${today()}" aria-label="Tanggal"><div style="display:grid;grid-template-columns:1fr 2fr;gap:8px"><button class="btn ghost" onclick="openNew=false;render()">Batal</button><button class="btn" onclick="createSrc()">Mulai catat</button></div></div>`;
+    h+=`<div class="new"><input id="n-title" placeholder="Judul" lang="ja" autocomplete="off" onkeydown="if(event.key==='Enter')createSrc()"><input id="n-date" type="date" value="${today()}" aria-label="Tanggal"><div style="display:grid;grid-template-columns:1fr 2fr;gap:8px"><button class="btn ghost" onclick="openNew=false;render()">Batal</button><button class="btn" onclick="createSrc()">Mulai catat</button></div></div>`;
   }else h+=`<button class="btn" style="width:100%;margin-bottom:12px" onclick="openNew=true;render();document.getElementById('n-title').focus()">+ Catatan baru</button>`;
   if(S.length){
     h+=`<input id="qs" type="search" placeholder="Cari kata atau judul" value="${esc(qs)}" oninput="onSearch(this.value)" autocomplete="off" style="margin:3px 0 8px">`;

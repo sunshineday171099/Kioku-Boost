@@ -47,6 +47,9 @@ input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid v
 .meta{font-size:13px;color:var(--mute)}
 .mini{border:0;background:var(--hide);color:var(--ink);font:inherit;font-size:13px;border-radius:10px;padding:6px 10px;cursor:pointer;white-space:nowrap}
 .mini.ic,.mini.x{height:34px;padding:0 9px;display:flex;align-items:center;justify-content:center;line-height:1}
+.dl{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:16px;z-index:20;width:38px;height:38px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--mute);cursor:pointer}
+.dl:hover{color:var(--ink)}
+@media (pointer:coarse),(max-width:700px){.dl{display:none}}
 .mini.ic{font-size:19px;background:none;color:var(--mute)}
 .mini.ic:active,.mini.x:active{background:var(--hide)}
 .hd.e .mini.ic{color:var(--accent)}
@@ -91,13 +94,13 @@ select{-webkit-appearance:none;appearance:none;padding-right:42px;text-overflow:
 </style>
 </head>
 <body>
+<button class="dl" onclick="downloadMd()" title="Unduh semua kosakata (.md)" aria-label="Unduh semua kosakata"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/></svg></button>
 <div class="wrap">
   <h1>記憶ブースト</h1>
   <div class="tabs">
     <button id="t1" class="on" onclick="tab('list')">Catatan</button>
     <button id="t2" onclick="tab('quiz')">Kartu</button>
   </div>
-  <div id="st" class="meta" style="text-align:center;min-height:0"></div>
   <div id="app"></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
@@ -112,7 +115,7 @@ function load(){try{S=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){S=[]}}
 function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}schedule()}
 /* ---- sinkron Supabase ---- */
 let sb=null,user=null,synced={},timer=null;
-function setStatus(t){const e=document.getElementById('st');if(e)e.textContent=t}
+function setStatus(t){}
 function saveSync(){try{localStorage.setItem(K+'-sync',JSON.stringify(synced))}catch(e){}}
 function schedule(){if(!sb||!user)return;clearTimeout(timer);timer=setTimeout(push,1500)}
 async function push(){
@@ -206,6 +209,23 @@ function hash(t){let h=2166136261;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i)
 function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function order(s,w){const o=w.map((_,i)=>i);if(!shuf)return o;const r=rng(hash(s.id)^shufSeed);for(let i=o.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[o[i],o[j]]=[o[j],o[i]]}return o}
 function toggleShuf(){shuf=!shuf;if(shuf)shufSeed=Math.floor(Math.random()*1e9);flip={};render()}
+function downloadMd(){
+  const L=S.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
+  let t='Kosakata\n\n';
+  L.forEach(s=>{
+    const w=parse(s.text);if(!w.length)return;
+    t+='**'+s.title+'** ('+s.date+')\n';
+    const u=safeUrl(s.link);if(u)t+=u+'\n';
+    t+='\n';
+    w.forEach(x=>{t+='- '+x.jp+(x.rd?' ('+x.rd+')':'')+(x.mn?' = '+x.mn:'')+(x.nt?' — '+x.nt:'')+'\n'});
+    t+='\n';
+  });
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([t],{type:'text/markdown;charset=utf-8'}));
+  a.download='kosakata-'+today()+'.md';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
 function monthLabel(k){const [y,m]=k.split('-').map(Number);return new Date(y,m-1,1).toLocaleDateString('id-ID',{month:'long',year:'numeric'})}
 function onSearch(v){qs=v;render();const e=document.getElementById('qs');if(e){e.focus();e.setSelectionRange(v.length,v.length)}}
 function tab(v){view=v;document.getElementById('t1').className=v==='list'?'on':'';document.getElementById('t2').className=v==='quiz'?'on':'';if(v==='quiz')startQuiz();render()}

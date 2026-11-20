@@ -212,9 +212,9 @@ function parse(text){
     const hard=/^[*＊★]/.test(raw);let line=hard?raw.replace(/^[*＊★]\s*/,''):raw;
     line=line.replace(/＃/g,'#');const hi=line.indexOf('#');let nt='',l=line;
     if(hi>=0){nt=line.slice(hi+1).trim();l=line.slice(0,hi).trim()}
-    const sl=/[\/|｜／]/.test(l);
-    const p=l.split(sl?/\s*[\/|｜／]\s*/:/\s*[,、，;\t]\s*/).filter((x,i)=>x!==''||i>0);
-    if(sl&&p.length>=4&&!nt){nt=p.slice(3).join(' / ');p.length=3}
+    const sl=/[;；]/.test(l);
+    const p=l.split(/\s*[;；]\s*/).filter((x,i)=>x!==''||i>0);
+    if(sl&&p.length>=4&&!nt){nt=p.slice(3).join('; ');p.length=3}
     let r;
     if(p.length>=3)r={jp:p[0],rd:p[1],mn:p.slice(2).join(', ')};
     else if(p.length===2)r={jp:p[0],rd:'',mn:p[1]};
@@ -249,7 +249,7 @@ function downloadMd(){
     t+='**'+s.title+'** ('+s.date+')\n';
     const u=safeUrl(s.link);if(u)t+=u+'\n';
     t+='\n';
-    w.forEach(x=>{t+='- '+x.jp+(x.rd?' ('+x.rd+')':'')+(x.mn?' = '+x.mn:'')+(x.nt?' — '+x.nt:'')+'\n'});
+    w.forEach(x=>{t+='- '+x.jp+(x.rd?' ('+x.rd+')':'')+(x.mn?' = '+x.mn:'')+(x.nt?' ※ '+x.nt:'')+'\n'});
     t+='\n';
   });
   const a=document.createElement('a');
@@ -317,7 +317,7 @@ function renderList(){
     if(cur)h+='</details>';
     if(!L.length)h+=`<div class="empty">Tidak ada yang cocok.</div>`;
   }
-  h+=`<div class="hint" style="text-align:center;margin-top:24px">Satu kata satu baris: Jepang / cara baca / arti. Cara baca boleh dilewati. Tanda # untuk catatan.</div><div class="tiny" style="margin-top:4px"><button onclick="theme()">Ganti tema</button>${sb?' <button onclick="logout()">Keluar</button>':''}</div>`;
+  h+=`<div class="hint" style="text-align:center;margin-top:24px">Satu kata satu baris: Jepang ; cara baca ; arti. Cara baca boleh dilewati. Tanda # untuk catatan.</div><div class="tiny" style="margin-top:4px"><button onclick="theme()">Ganti tema</button>${sb?' <button onclick="logout()">Keluar</button>':''}</div>`;
   return h;
 }
 

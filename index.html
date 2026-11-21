@@ -339,7 +339,7 @@ function pool(){
   return out;
 }
 function startQuiz(){
-  q.deck=pool();if(q.hard)q.deck=q.deck.filter(x=>x.hard);if(q.rnd)shuffleDeck(q.deck);q.i=0;pickHidden();
+  q.deck=pool();if(q.hard)q.deck=q.deck.filter(x=>x.hard);if(q.rnd)shuffleDeck(q.deck);q.i=0;q.done=false;pickHidden();
 }
 function pickHidden(){
   const x=q.deck[q.i];q.shown={};if(!x){q.hidden=[];return}
@@ -351,7 +351,7 @@ function setScope(v){q.scope=v;q.src='all';startQuiz();render()}
 function setSrc(v){q.src=v;startQuiz();render()}
 function reveal(k){q.shown[k]=true;render()}
 function shuffleDeck(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function next(){q.i++;if(q.i>=q.deck.length){if(q.rnd)shuffleDeck(q.deck);q.i=0}pickHidden();render()}
+function next(){q.i++;if(q.i>=q.deck.length){q.done=true;render();return}pickHidden();render()}
 function toggleQHard(){q.hard=!q.hard;startQuiz();render()}
 function markHard(){const x=q.deck[q.i];if(!x)return;toggleHard(x.sid,x.li);x.hard=!x.hard;render()}
 function showAns(){q.hidden.forEach(k=>q.shown[k]=true);render()}
@@ -377,6 +377,10 @@ function renderQuiz(){
   const modes=[['jp','Jepang'],['rd','Baca'],['mn','Arti']];
   const bar=`<div class="bar" style="position:static;padding-top:0"><span class="ic0" title="Tutup" aria-label="Tutup">${EYE}</span>`+modes.map(([m,n])=>`<button class="chip ${(m==='rand'?q.rnd:q.sel.includes(m))?'on':''}" onclick="setMode('${m}')">${n}</button>`).join('')+`<button class="chip sq ${q.hard?'on':''}" style="margin-left:auto" onclick="toggleQHard()" aria-label="Hanya yang susah" title="Hanya yang susah">${flagIc(q.hard,16)}</button><button class="chip sq ${q.rnd?'on':''}" onclick="setMode('rand')" aria-label="Acak" title="Acak">${SHUF}</button></div>`;
   const x=q.deck[q.i];
+  if(q.done&&q.deck.length){
+    const hc=q.deck.filter(d=>d.hard).length,two=hc&&!q.hard;
+    return h+bar+`<div class="quiz" style="text-align:center;padding:30px 16px 16px"><div style="font-size:22px;font-weight:700">Selesai</div><div class="meta" style="margin:6px 0 18px">${q.deck.length} kartu sudah dilihat semua</div><div class="acts" style="grid-template-columns:${two?'1fr 1fr':'1fr'}"><button class="btn" onclick="startQuiz();render()">Ulangi</button>${two?`<button class="btn ghost" onclick="q.hard=true;startQuiz();render()">Yang susah (${hc})</button>`:''}</div></div>`;
+  }
   if(!x)return h+(q.hard?bar+`<div class="empty">Belum ada kata yang ditandai susah.</div>`:`<div class="empty">Belum ada kata di sumber ini.</div>`);
   h+=bar;
   h+=`<div class="quiz"><div class="prog"><span>${q.i+1} dari ${q.deck.length}</span><span style="text-align:right">${esc(x.src)}</span><button class="flg ${x.hard?'on':''}" onclick="markHard()" aria-label="Tandai susah" title="Tandai susah">${flagIc(x.hard,17)}</button></div>`;

@@ -57,7 +57,7 @@ input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid v
 .mini.ic:active,.mini.x:active{background:var(--hide)}
 .title{touch-action:manipulation;-webkit-user-select:none;user-select:none}
 .title.done{color:var(--mute);font-weight:500}
-.ck{color:var(--accent);font-weight:700}
+.ck{color:var(--accent);font-weight:700;font-size:15px}
 .hd.e .mini.ic{color:var(--accent)}
 .ti.li{font-weight:400;font-size:14px;height:34px;margin-top:6px}
 a.mini{text-decoration:none}
@@ -290,7 +290,7 @@ function renderList(){
         h+=`<details class="mo" ${op?'open':''} ontoggle="if(!qs)openM['${mk}']=this.open"><summary>${monthLabel(mk)} · ${n} catatan</summary>`;
       }
       const w=parse(s.text),ed=editId===s.id,lk=safeUrl(s.link);
-      h+=`<div class="card"><div class="hd${ed?' e':''}"><div class="t">${ed?`<input class="ti" value="${esc(s.title)}" oninput="onTitle('${s.id}',this.value)" lang="ja" autocomplete="off" aria-label="Judul"><input class="ti li" value="${esc(s.link||'')}" oninput="onLink('${s.id}',this.value)" placeholder="Link (opsional)" inputmode="url" autocapitalize="off" autocomplete="off" aria-label="Link"><div class="meta" style="margin-top:6px">${fmt(s.date)} · ${w.length} kata</div>`:`<div class="title${s.done?' done':''}" onclick="tapTitle('${s.id}')">${esc(s.title)}</div><div class="meta">${fmt(s.date)} · ${w.length} kata</div>`}</div>
+      h+=`<div class="card"><div class="hd${ed?' e':''}"><div class="t">${ed?`<input class="ti" value="${esc(s.title)}" oninput="onTitle('${s.id}',this.value)" lang="ja" autocomplete="off" aria-label="Judul"><input class="ti li" value="${esc(s.link||'')}" oninput="onLink('${s.id}',this.value)" placeholder="Link (opsional)" inputmode="url" autocapitalize="off" autocomplete="off" aria-label="Link"><div class="meta" style="margin-top:6px">${fmt(s.date)} · ${w.length} kata</div>`:`<div class="title${s.done?' done':''}" onclick="tapTitle('${s.id}')">${s.done?'<span class="ck">✓︎</span> ':''}${esc(s.title)}</div><div class="meta">${fmt(s.date)} · ${w.length} kata</div>`}</div>
         ${(!ed&&lk)?`<a class="mini ic" href="${esc(lk)}" target="_blank" rel="noopener noreferrer" aria-label="Buka link">↗︎</a>`:''}<button class="mini ic" aria-label="${ed?'Selesai':'Catat'}" onclick="${ed?'done()':`edit('${s.id}')`}">${ed?'✓︎':'✎︎'}</button><button class="mini x" aria-label="Hapus" onclick="del('${s.id}')">×</button></div>`;
       if(ed){
         h+=`<textarea id="ta" lang="ja" autocapitalize="off" oninput="onType('${s.id}',this)">${esc(s.text)}</textarea>`;
